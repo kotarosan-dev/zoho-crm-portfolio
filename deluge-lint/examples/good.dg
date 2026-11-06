@@ -1,0 +1,58 @@
+void automation.ReviewOpenDeals(string leadId)
+{
+    /*
+    function_name   : ReviewOpenDeals
+    motivation      : Mark a lead as contacted and list open deals
+    processing_flow :
+      - Fetch deals from the CRM
+      - Collect the names of deals that are still open
+      - Update the lead status
+    */
+
+    info "Start: ReviewOpenDeals";
+
+    dealsResponse = invokeurl
+    [
+        url: "https://www.zohoapis.com/crm/v8/Deals?fields=Deal_Name,Stage&per_page=50"
+        type: GET
+        connection: "zoho_crm"
+    ];
+    info dealsResponse;
+
+    deals = dealsResponse.get("data");
+    if (deals == null)
+    {
+        info "No deals returned; nothing to do";
+        return;
+    }
+
+    openDeals = List();
+    for each deal in deals
+    {
+        stage = deal.get("Stage");
+        if (stage != "Closed Won" && stage != "Closed Lost")
+        {
+            openDeals.add(deal.get("Deal_Name"));
+        }
+    }
+    info "Open deals: " + openDeals.toString();
+
+    // Build the request body: Map -> List -> Map
+    record = Map();
+    record.put("Lead_Status", "Contacted");
+    records = List();
+    records.add(record);
+    payload = Map();
+    payload.put("data", records);
+
+    updateResponse = invokeurl
+    [
+        url: "https://www.zohoapis.com/crm/v8/Leads/" + leadId
+        type: PUT
+        parameters: payload.toString()
+        connection: "zoho_crm"
+    ];
+    info updateResponse;
+
+    info "End: ReviewOpenDeals";
+}

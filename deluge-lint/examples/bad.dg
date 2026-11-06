@@ -1,0 +1,42 @@
+void automation.ReviewOpenDealsBadly(string leadId)
+{
+    /*
+    Intentionally broken example: it triggers most lint rules.
+    */
+
+    leadRef = "123456789012345678";
+    counter = 0;
+
+    for (int i = 0; i < 3; i++)
+    {
+        counter = counter + 1;
+    }
+
+    while (counter < 10)
+    {
+        counter = counter + 1;
+    }
+
+    label = counter > 5 ? "many" : "few";
+    counter = counter + 1; // end-of-line comment
+
+    if (counter > 5) label = "many";
+
+    dealsResponse = invokeurl
+    [
+        url: "https://www.zohoapis.com/crm/v8/Deals"
+        // this comment can break saving
+        type: GET
+        connection: "zoho_crm"
+    ];
+
+    ids = dealsResponse.keySet();
+    text = ids.join(",");
+    number = text.toint();
+    kind = number.getType();
+
+    note = "unterminated string;
+    info ("done");
+}
+)
+/* unterminated block comment
