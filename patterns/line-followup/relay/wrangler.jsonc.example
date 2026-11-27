@@ -1,0 +1,13 @@
+{
+  "name": "line-zoho-relay",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  "vars": {
+    "ZOHO_ACCOUNTS_URL": "https://accounts.zoho.com",
+    "ZOHO_API_DOMAIN": "https://www.zohoapis.com",
+    "LIFF_URL": "https://liff.line.me/REPLACE_ME"
+  }
+  // Secrets (set with `wrangler secret put <NAME>`, never commit them):
+  //   LINE_CHANNEL_SECRET, LINE_CHANNEL_ACCESS_TOKEN, LINE_LOGIN_CHANNEL_ID,
+  //   ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REFRESH_TOKEN, RELAY_KEY
+}

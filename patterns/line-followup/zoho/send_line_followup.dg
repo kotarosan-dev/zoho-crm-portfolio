@@ -1,0 +1,114 @@
+void automation.SendLineFollowup(String leadId)
+{
+    /*
+    function_name   : SendLineFollowup
+    label_name      : LINE追客メッセージ送信
+    motivation      : 一定期間反応のないリードへ、LINEリレー経由でフォローアップを送る
+    processing_flow :
+      - リードを取得し、LINE_User_ID と LINE_Status を確認する
+      - 宛名入りの追客文を作り、リレーの /crm/push へ送信する
+      - 成功時にリードへメモを追加し、Last_LINE_Push を更新する
+    related_functions: なし（リレー: relay/src/worker.js の POST /crm/push）
+    */
+
+    info "LINE追客の処理を開始します。リードID: " + leadId;
+
+    leadResponse = invokeurl
+    [
+        url :"https://www.zohoapis.com/crm/v8/Leads/" + leadId
+        type :GET
+        connection:"zoho_crm"
+    ];
+    info "リード取得のレスポンス: " + leadResponse;
+
+    leadList = leadResponse.get("data");
+    if(leadList == null || leadList.size() == 0)
+    {
+        info "リードが取得できなかったため、処理を終了します。";
+        return;
+    }
+
+    lead = leadList.get(0);
+    lineUserId = ifnull(lead.get("LINE_User_ID"),"");
+    lineStatus = ifnull(lead.get("LINE_Status"),"");
+
+    if(lineUserId == "" || lineStatus == "Blocked")
+    {
+        info "LINE_User_ID が空、またはブロック済みのため送信しません。LINE_Status: " + lineStatus;
+        return;
+    }
+
+    lastName = ifnull(lead.get("Last_Name"),"お客");
+    followupText = lastName + " 様\nお世話になっております。先日はお問い合わせいただきありがとうございました。\nその後、ご状況はいかがでしょうか。ご不明な点がございましたら、このLINEにお気軽にご返信ください。";
+
+    relayUrl = zoho.crm.getOrgVariable("line_relay_url");
+    relayKey = zoho.crm.getOrgVariable("line_relay_key");
+
+    payload = Map();
+    payload.put("lineUserId",lineUserId);
+    payload.put("text",followupText);
+
+    relayHeaders = Map();
+    relayHeaders.put("X-Relay-Key",relayKey);
+    relayHeaders.put("Content-Type","application/json");
+
+    pushResponse = invokeurl
+    [
+        url :relayUrl + "/crm/push"
+        type :POST
+        parameters:payload.toString()
+        headers:relayHeaders
+    ];
+    info "リレー送信のレスポンス: " + pushResponse;
+
+    pushOk = pushResponse.get("ok");
+    if(pushOk == null || pushOk.toString() != "true")
+    {
+        info "LINE送信に失敗したため、メモと日時の更新は行いません。";
+        return;
+    }
+
+    parentMap = Map();
+    moduleMap = Map();
+    moduleMap.put("api_name","Leads");
+    parentMap.put("module",moduleMap);
+    parentMap.put("id",leadId);
+
+    noteMap = Map();
+    noteMap.put("Note_Title","LINE follow-up sent");
+    noteMap.put("Note_Content",followupText);
+    noteMap.put("Parent_Id",parentMap);
+
+    noteList = List();
+    noteList.add(noteMap);
+    noteBody = Map();
+    noteBody.put("data",noteList);
+
+    noteResponse = invokeurl
+    [
+        url :"https://www.zohoapis.com/crm/v8/Notes"
+        type :POST
+        parameters:noteBody.toString()
+        connection:"zoho_crm"
+    ];
+    info "メモ追加のレスポンス: " + noteResponse;
+
+    leadMap = Map();
+    leadMap.put("Last_LINE_Push",zoho.currenttime.toString("yyyy-MM-dd'T'HH:mm:ss'+09:00'"));
+
+    leadList = List();
+    leadList.add(leadMap);
+    updateBody = Map();
+    updateBody.put("data",leadList);
+
+    updateResponse = invokeurl
+    [
+        url :"https://www.zohoapis.com/crm/v8/Leads/" + leadId
+        type :PUT
+        parameters:updateBody.toString()
+        connection:"zoho_crm"
+    ];
+    info "Last_LINE_Push 更新のレスポンス: " + updateResponse;
+
+    info "LINE追客の処理を終了します。リードID: " + leadId;
+}

@@ -1,0 +1,10 @@
+{
+  "name": "line-zoho-relay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker relay between LINE Official Account and Zoho CRM",
+  "scripts": {
+    "test": "node --test"
+  }
+}
