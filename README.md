@@ -26,6 +26,12 @@ Exit code is `1` when any error is found, so it works in CI or a pre-commit hook
 
 The checks are heuristic, not a full Deluge parser. They aim for few false positives, so a clean result does not prove the script will save or run.
 
+## Patterns
+
+| Pattern | What it shows |
+| --- | --- |
+| [line-followup](patterns/line-followup/) | LINE Official Account × Zoho CRM: a LINE friend fills in a form inside LINE, becomes a Lead, and gets follow-up messages that a Zoho CRM workflow schedules. A small relay on Cloudflare Workers holds the LINE keys. Tests run with `npm test` (Node.js, no dependencies). |
+
 ## About me
 
 I'm Kotaro, a Zoho CRM developer and consultant in Japan. I design and build Zoho CRM setups for small and mid-sized businesses: Deluge, Client Script, Widgets, API integrations, data migration, and AI features with human approval.
@@ -39,6 +45,8 @@ Zoho CRM の実案件で使ってきた道具のうち、お客様の情報を�
 - **deluge-lint** — Deluge のコードを Zoho の画面に貼る前に、よくある誤りを見つけます。括弧の閉じ忘れ、Deluge に無い書き方（`while`・C 言語風の `for`・三項演算子）、`invokeurl` の中のコメント、レコード ID の直書きなど。Python 3.9 以上で、追加のインストールは要りません。
 
 調べるのは書き方の誤りだけです。結果に問題が無くても、保存・実行できることまでは保証しません。
+
+- **line-followup** — LINE 公式アカウントと Zoho CRM をつなぐ追客の型です。LINE の友だちが LINE の中のフォームに入力すると見込み客になり、Zoho CRM のワークフローが決めた日に LINE でフォローの連絡を送ります。LINE の鍵は Cloudflare Workers の中継だけが持ちます。
 
 Zoho CRM の設計・開発のご相談は [kotarosan-nocode.com](https://www.kotarosan-nocode.com/contact) から。
 
